@@ -103,12 +103,15 @@ def create_app() -> FastAPI:
 
     @application.get("/", tags=["Root"], include_in_schema=False)
     def root() -> dict:
+        base = settings.api_public_url.rstrip("/")
         return {
             "message": "PromoSense API — Shopee Double Date (2024–2026)",
-            "docs": "/docs" if settings.docs_enabled else None,
-            "dataset": "/api/v1/dataset",
-            "avaliacoes": "/api/v1/avaliacoes",
-            "dashboard": "/api/v1/dashboard",
+            "url": base,
+            "docs": f"{base}/docs" if settings.docs_enabled else None,
+            "health": f"{base}/api/v1/health",
+            "dataset": f"{base}/api/v1/dataset",
+            "avaliacoes": f"{base}/api/v1/avaliacoes",
+            "dashboard": f"{base}/api/v1/dashboard",
         }
 
     return application

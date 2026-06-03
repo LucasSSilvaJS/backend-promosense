@@ -5,6 +5,7 @@ from functools import lru_cache
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.constants.api import API_PUBLIC_URL, FRONTEND_URL
 from app.constants.dataset import DATASET_DESCRICAO
 
 
@@ -33,10 +34,11 @@ class Settings(BaseSettings):
     rate_limit_enabled: bool = True
     rate_limit_per_minute: int = 120
     cors_origins: str = (
-        "http://localhost:3000,http://localhost:5173,https://promosense.vercel.app"
+        f"http://localhost:3000,http://localhost:5173,{FRONTEND_URL}"
     )
-    allowed_hosts: str = "*"
+    allowed_hosts: str = "backend-promosense.onrender.com,localhost,127.0.0.1"
     docs_enabled: bool = True
+    api_public_url: str = API_PUBLIC_URL
 
     @field_validator("rate_limit_per_minute")
     @classmethod

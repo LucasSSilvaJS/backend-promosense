@@ -2,6 +2,8 @@
 
 API RESTful para o front **PromoSense**, alimentada por um **dataset de validação** com avaliações reais da **Shopee** coletadas entre **2024 e 2026**, durante campanhas **Double Date**, com sentimento **anotado manualmente**.
 
+**Produção:** https://backend-promosense.onrender.com
+
 Arquivo fonte: `olist_processado.csv` (texto + sentimento + aspecto). Persistência CRUD: `data/avaliacoes.json`.
 
 ## Dataset
@@ -24,7 +26,8 @@ cd backend
 python run.py
 ```
 
-Swagger: http://localhost:8000/docs
+Swagger local: http://localhost:8000/docs  
+Swagger produção: https://backend-promosense.onrender.com/docs
 
 > Após atualizar a versão do dataset, apague `data/avaliacoes.json` e reinicie para reimportar o CSV com os novos metadados.
 
@@ -70,11 +73,22 @@ Distribuição de sentimento geral e por aspecto (preço, entrega, qualidade), c
 
 ## Front PromoSense
 
+**Base URL da API (produção):** `https://backend-promosense.onrender.com`
+
+No front (`https://promosense.vercel.app`), configure:
+
+```env
+VITE_API_URL=https://backend-promosense.onrender.com
+# ou
+NEXT_PUBLIC_API_URL=https://backend-promosense.onrender.com
+```
+
 | Tela | Endpoint |
 |------|----------|
-| Avaliações | `GET /api/v1/avaliacoes?periodo_promocional=double_date_2025&page_size=10` |
-| Dashboard | `GET /api/v1/dashboard?periodo_promocional=double_date_2025` |
-| Filtro períodos | `GET /api/v1/avaliacoes/periodos` |
+| Avaliações | `GET https://backend-promosense.onrender.com/api/v1/avaliacoes?periodo_promocional=double_date_2025&page_size=10` |
+| Dashboard | `GET https://backend-promosense.onrender.com/api/v1/dashboard?periodo_promocional=double_date_2025` |
+| Filtro períodos | `GET https://backend-promosense.onrender.com/api/v1/avaliacoes/periodos` |
+| Health | `GET https://backend-promosense.onrender.com/api/v1/health` |
 
 ## Segurança
 
@@ -93,10 +107,11 @@ Distribuição de sentimento geral e por aspecto (preço, entrega, qualidade), c
 AUTH_ENABLED=true
 API_KEY=sua-chave-secreta
 RATE_LIMIT_PER_MINUTE=120
-CORS_ORIGINS=https://promosense.vercel.app
+CORS_ORIGINS=https://promosense.vercel.app,http://localhost:3000
 ENVIRONMENT=production
 DOCS_ENABLED=false
-ALLOWED_HOSTS=api.seudominio.com
+ALLOWED_HOSTS=backend-promosense.onrender.com
+API_PUBLIC_URL=https://backend-promosense.onrender.com
 ```
 
 ### Exemplo — escrita autenticada
@@ -122,4 +137,6 @@ No painel do Render:
 3. **Build command:** `pip install -r requirements.txt`
 4. **Start command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
-Configure também as variáveis de `.env` (principalmente `API_KEY` e `CORS_ORIGINS`).
+Configure também as variáveis de `.env` no Render (principalmente `API_KEY`, `CORS_ORIGINS` e `ALLOWED_HOSTS=backend-promosense.onrender.com`).
+
+**URL do serviço:** https://backend-promosense.onrender.com
