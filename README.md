@@ -109,3 +109,17 @@ curl -X POST http://localhost:8000/api/v1/avaliacoes \
 ```
 
 Leituras (GET) permanecem públicas para o front consumir sem expor a chave no browser.
+
+## Deploy (Render / Railway)
+
+O build **falha com Python 3.14+** porque o `pydantic-core` precisa compilar Rust e o ambiente do Render bloqueia isso.
+
+**Solução:** use **Python 3.12** (já configurado em `runtime.txt` e `.python-version`).
+
+No painel do Render:
+1. **Settings → Environment → `PYTHON_VERSION`** = `3.12.7`
+2. Ou deixe o Render detectar via `runtime.txt` na raiz do repo
+3. **Build command:** `pip install -r requirements.txt`
+4. **Start command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+
+Configure também as variáveis de `.env` (principalmente `API_KEY` e `CORS_ORIGINS`).
