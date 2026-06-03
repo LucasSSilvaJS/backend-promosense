@@ -2,11 +2,10 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from slowapi import _rate_limit_exceeded_handler
-from slowapi.middleware import SlowAPIMiddleware
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -15,7 +14,7 @@ from app.api.v1.router import api_router
 from app.config import get_settings
 from app.constants.dataset import DATASET_NOME
 from app.security.middleware import SecurityHeadersMiddleware
-from app.security.rate_limit import limiter
+from app.security.rate_limit import limiter, read_limit
 
 
 @asynccontextmanager
@@ -53,10 +52,6 @@ def create_app() -> FastAPI:
 
     application.state.limiter = limiter
     application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
-    if settings.rate_limit_enabled:
-        limiter._default_limits = [f"{settings.rate_limit_per_minute}/minute"]
-        application.add_middleware(SlowAPIMiddleware)
 
     if settings.allowed_hosts_list != ["*"]:
         application.add_middleware(
@@ -102,7 +97,8 @@ def create_app() -> FastAPI:
     application.openapi = custom_openapi
 
     @application.get("/", tags=["Root"], include_in_schema=False)
-    def root() -> dict:
+    @limiter.limit(read_limit())
+    def root(request: Request) -> dict:
         base = settings.api_public_url.rstrip("/")
         return {
             "message": "PromoSense API — Shopee Double Date (2024–2026)",

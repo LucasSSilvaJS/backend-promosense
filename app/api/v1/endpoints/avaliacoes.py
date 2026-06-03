@@ -5,7 +5,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.api.deps import get_review_service
-from app.config import get_settings
 from app.schemas.review import (
     AvaliacaoCreateSchema,
     AvaliacaoListSchema,
@@ -14,13 +13,11 @@ from app.schemas.review import (
     PeriodoListSchema,
 )
 from app.security.api_key import require_api_key
-from app.security.rate_limit import limiter
+from app.security.rate_limit import limiter, read_limit, write_limit
 from app.security.validators import sanitize_search
 from app.services.review_service import ReviewService
 
 router = APIRouter()
-_settings = get_settings()
-_read_limit = f"{_settings.rate_limit_per_minute}/minute"
 
 
 @router.get(
@@ -29,7 +26,7 @@ _read_limit = f"{_settings.rate_limit_per_minute}/minute"
     summary="Listar períodos promocionais",
     description="Edições Double Date Shopee (2024, 2025, 2026).",
 )
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def list_periodos(
     request: Request,
     service: Annotated[ReviewService, Depends(get_review_service)],
@@ -43,7 +40,7 @@ def list_periodos(
     summary="Listar avaliações (JSON)",
     description="Lista paginada com filtro por período promocional e sentimento.",
 )
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def list_avaliacoes(
     request: Request,
     service: Annotated[ReviewService, Depends(get_review_service)],
@@ -70,7 +67,7 @@ def list_avaliacoes(
     response_model=AvaliacaoSchema,
     summary="Buscar avaliação por ID",
 )
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def get_avaliacao(
     request: Request,
     avaliacao_id: str,
@@ -92,7 +89,7 @@ def get_avaliacao(
     summary="Criar avaliação",
     dependencies=[Depends(require_api_key)],
 )
-@limiter.limit("30/minute")
+@limiter.limit(write_limit())
 def create_avaliacao(
     request: Request,
     payload: AvaliacaoCreateSchema,
@@ -107,7 +104,7 @@ def create_avaliacao(
     summary="Atualizar avaliação",
     dependencies=[Depends(require_api_key)],
 )
-@limiter.limit("30/minute")
+@limiter.limit(write_limit())
 def update_avaliacao(
     request: Request,
     avaliacao_id: str,
@@ -129,7 +126,7 @@ def update_avaliacao(
     summary="Remover avaliação",
     dependencies=[Depends(require_api_key)],
 )
-@limiter.limit("30/minute")
+@limiter.limit(write_limit())
 def delete_avaliacao(
     request: Request,
     avaliacao_id: str,

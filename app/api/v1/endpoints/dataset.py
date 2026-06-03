@@ -5,13 +5,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 
 from app.api.deps import get_review_service
-from app.config import get_settings
 from app.schemas.review import DatasetInfoSchema
-from app.security.rate_limit import limiter
+from app.security.rate_limit import limiter, read_limit
 from app.services.review_service import ReviewService
 
 router = APIRouter()
-_read_limit = f"{get_settings().rate_limit_per_minute}/minute"
 
 
 @router.get(
@@ -23,7 +21,7 @@ _read_limit = f"{get_settings().rate_limit_per_minute}/minute"
         "coletadas em Double Date, anotadas manualmente."
     ),
 )
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def get_dataset_info(
     request: Request,
     service: Annotated[ReviewService, Depends(get_review_service)],

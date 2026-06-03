@@ -5,13 +5,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Request
 
 from app.api.deps import get_review_service
-from app.config import get_settings
 from app.schemas.review import DashboardSchema, ReviewStatsSchema
-from app.security.rate_limit import limiter
+from app.security.rate_limit import limiter, read_limit
 from app.services.review_service import ReviewService
 
 router = APIRouter()
-_read_limit = f"{get_settings().rate_limit_per_minute}/minute"
 
 
 @router.get(
@@ -23,7 +21,7 @@ _read_limit = f"{get_settings().rate_limit_per_minute}/minute"
         "Use periodo_promocional para filtrar como no front."
     ),
 )
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def get_dashboard(
     request: Request,
     service: Annotated[ReviewService, Depends(get_review_service)],
@@ -40,7 +38,7 @@ def get_dashboard(
     response_model=ReviewStatsSchema,
     summary="Resumo de contagens por sentimento",
 )
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def get_resumo(
     request: Request,
     service: Annotated[ReviewService, Depends(get_review_service)],

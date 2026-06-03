@@ -5,7 +5,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.api.deps import get_review_service
-from app.config import get_settings
 from app.schemas.review import (
     AvaliacaoCreateSchema,
     AvaliacaoUpdateSchema,
@@ -14,16 +13,15 @@ from app.schemas.review import (
     ReviewStatsSchema,
 )
 from app.security.api_key import require_api_key
-from app.security.rate_limit import limiter
+from app.security.rate_limit import limiter, read_limit, write_limit
 from app.security.validators import sanitize_search
 from app.services.review_service import ReviewService
 
 router = APIRouter()
-_read_limit = f"{get_settings().rate_limit_per_minute}/minute"
 
 
 @router.get("", response_model=ReviewListSchema, summary="Listar reviews (legado)")
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def list_reviews(
     request: Request,
     service: Annotated[ReviewService, Depends(get_review_service)],
@@ -43,7 +41,7 @@ def list_reviews(
 
 
 @router.get("/stats", response_model=ReviewStatsSchema, summary="Estatísticas (legado)")
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def get_stats(
     request: Request,
     service: Annotated[ReviewService, Depends(get_review_service)],
@@ -53,7 +51,7 @@ def get_stats(
 
 
 @router.get("/{review_id}", response_model=ReviewSchema, summary="Buscar por ID (legado)")
-@limiter.limit(_read_limit)
+@limiter.limit(read_limit())
 def get_review(
     request: Request,
     review_id: str,
@@ -71,7 +69,7 @@ def get_review(
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_api_key)],
 )
-@limiter.limit("30/minute")
+@limiter.limit(write_limit())
 def create_review(
     request: Request,
     payload: AvaliacaoCreateSchema,
@@ -86,7 +84,7 @@ def create_review(
     response_model=ReviewSchema,
     dependencies=[Depends(require_api_key)],
 )
-@limiter.limit("30/minute")
+@limiter.limit(write_limit())
 def update_review(
     request: Request,
     review_id: str,
@@ -104,7 +102,7 @@ def update_review(
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(require_api_key)],
 )
-@limiter.limit("30/minute")
+@limiter.limit(write_limit())
 def delete_review(
     request: Request,
     review_id: str,
