@@ -31,6 +31,127 @@ Swagger produção: https://backend-promosense.onrender.com/docs
 
 > Após atualizar a versão do dataset, apague `data/avaliacoes.json` e reinicie para reimportar o CSV com os novos metadados.
 
+## Testes
+
+A suíte cobre as funcionalidades básicas da API em três níveis automatizados (pytest) e um roteiro manual para validação em local/produção.
+
+### Visão geral
+
+| Nível | Pasta | Qtd. | Objetivo |
+|-------|-------|------|----------|
+| **Unitário** | `tests/unit/` | 26 | Testa funções e classes isoladas, sem HTTP |
+| **Integração** | `tests/integration/` | 17 | Testa endpoints reais via `TestClient` |
+| **Sistema** | `tests/system/` | 4 | Simula jornadas completas (front + admin) |
+| **Manual** | `tests/manual/` | — | Checklist para validação humana pós-deploy |
+
+**Total automatizado:** 51 testes.
+
+### Pré-requisitos
+
+```bash
+pip install -r requirements.txt
+```
+
+Dependências de teste incluídas no mesmo arquivo: `pytest`, `pytest-cov`, `httpx`.
+
+### Executar
+
+```bash
+pytest                        # todos os testes
+pytest -m unit                # só unitários
+pytest -m integration         # só integração
+pytest -m system              # só sistema
+pytest --cov=app              # com cobertura de código
+pytest --cov=app --cov-report=html   # relatório HTML em htmlcov/
+pytest tests/unit/test_csv_loader.py # arquivo específico
+pytest -k "dashboard"         # filtro por nome
+```
+
+Configuração em `pytest.ini` (markers `unit`, `integration`, `system`).
+
+### Ambiente de teste (`conftest.py`)
+
+Os testes **não usam** o CSV completo (35k linhas) nem o JSON de produção. Cada execução:
+
+1. Carrega `tests/fixtures/sample.csv` (5 avaliações de exemplo)
+2. Grava JSON temporário em diretório isolado (`tmp_path`)
+3. Define variáveis de ambiente de teste (`API_KEY`, `RATE_LIMIT_ENABLED=false`, etc.)
+4. Limpa caches (`get_settings`, `get_review_repository`) entre execuções
+
+Isso garante testes **rápidos**, **reproduzíveis** e **sem alterar** `data/avaliacoes.json` local.
+
+### Testes unitários (`tests/unit/`)
+
+Validam a lógica interna sem subir servidor HTTP.
+
+| Arquivo | O que testa |
+|---------|-------------|
+| `test_csv_loader.py` | Parse de linhas CSV, normalização de sentimento, carga do arquivo |
+| `test_enrichment.py` | Metadados Shopee (plataforma, período Double Date, autor anonimizado, aspectos) |
+| `test_validators.py` | Sanitização do parâmetro `search` (tamanho, caracteres inválidos) |
+| `test_api_key.py` | Validação de API Key, rejeição sem header, bypass com `AUTH_ENABLED=false` |
+| `test_repository.py` | CRUD no JSON, filtros, estatísticas, listagem de períodos |
+| `test_service.py` | Paginação, dashboard, dataset info, criação de avaliação |
+
+### Testes de integração (`tests/integration/test_api_endpoints.py`)
+
+Exercitam a API HTTP com `TestClient` do FastAPI.
+
+| Grupo | Endpoints | Cenários |
+|-------|-----------|----------|
+| Health / Root | `/`, `/docs`, `/api/v1/health` | Status online, links, Swagger |
+| Dataset | `/api/v1/dataset` | Metadados Shopee, total de registros |
+| Avaliações | `/api/v1/avaliacoes/*` | Listagem, filtros, paginação, GET por ID, 404 |
+| CRUD autenticado | POST / PUT / DELETE | 401 sem chave, 201/200/204 com `X-API-Key` |
+| Dashboard | `/api/v1/dashboard`, `/resumo` | Distribuição geral e filtro por período |
+| Legado | `/api/v1/reviews/*` | Compatibilidade com rotas antigas |
+
+### Testes de sistema (`tests/system/test_fluxo_completo.py`)
+
+Simulam fluxos reais de uso:
+
+1. **Jornada front** — health → dataset → períodos → listagem filtrada → detalhe → dashboard
+2. **Jornada admin** — criar avaliação → consultar → editar sentimento → excluir → confirmar 404
+3. **Busca textual** — filtro `?search=entrega`
+4. **Segurança** — headers `X-Content-Type-Options`, `X-Frame-Options` nas respostas
+
+### Testes manuais
+
+Roteiro enxuto em [`tests/manual/CHECKLIST.md`](tests/manual/CHECKLIST.md) — **6 rotas principais** usadas pelo front (health, períodos, avaliações, dashboard) + validação das telas Vercel.
+
+Use após deploy no Render.
+
+### Estrutura de arquivos
+
+```
+tests/
+├── conftest.py                         # fixtures compartilhadas
+├── fixtures/
+│   └── sample.csv                      # 5 avaliações para testes
+├── unit/
+│   ├── test_csv_loader.py
+│   ├── test_enrichment.py
+│   ├── test_validators.py
+│   ├── test_api_key.py
+│   ├── test_repository.py
+│   └── test_service.py
+├── integration/
+│   └── test_api_endpoints.py
+├── system/
+│   └── test_fluxo_completo.py
+└── manual/
+    └── CHECKLIST.md
+```
+
+### Quando rodar cada tipo
+
+| Momento | Comando sugerido |
+|---------|------------------|
+| Durante desenvolvimento | `pytest -m unit` (rápido) |
+| Antes de commit | `pytest` (suíte completa) |
+| Antes de deploy | `pytest` + checklist manual |
+| CI/CD (futuro) | `pytest --cov=app --cov-fail-under=70` |
+
 ## Endpoints
 
 ### Avaliações — `/api/v1/avaliacoes`
