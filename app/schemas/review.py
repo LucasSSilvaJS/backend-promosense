@@ -15,11 +15,7 @@ from app.constants.dataset import (
 from app.constants.promosense import ASPECTO_LABELS, PERIODOS_PROMOCIONAIS
 
 SentimentoLiteral = Literal["positivo", "negativo", "neutro"]
-PeriodoLiteral = Literal[
-    "double_date_2024",
-    "double_date_2025",
-    "double_date_2026",
-]
+PeriodoLiteral = Literal["double_date"]
 AspectoNomeLiteral = Literal["preco", "entrega", "qualidade"]
 
 
@@ -48,11 +44,8 @@ class AvaliacaoBaseSchema(BaseModel):
         description="Tipo de dataset (validação manual).",
     )
     periodo_promocional: PeriodoLiteral = Field(
-        ..., description="Edição Double Date (2024, 2025 ou 2026)."
-    )
-    data_avaliacao: str = Field(
-        ...,
-        description="Data da avaliação no período Double Date (YYYY-MM-DD).",
+        default="double_date",
+        description="Campanha Double Date (coleta agregada 2024–2026).",
     )
     aspectos: list[AspectoInputSchema] = Field(
         default_factory=list,
@@ -71,7 +64,6 @@ class AvaliacaoUpdateSchema(BaseModel):
     plataforma: str | None = None
     fonte_anotacao: str | None = None
     periodo_promocional: PeriodoLiteral | None = None
-    data_avaliacao: str | None = None
     aspectos: list[AspectoInputSchema] | None = None
 
 
@@ -118,7 +110,8 @@ class DashboardSchema(BaseModel):
 class PeriodoSchema(BaseModel):
     id: str
     label: str
-    ano: int
+    ano_inicio: int
+    ano_fim: int
     descricao: str | None = None
 
 
@@ -155,7 +148,7 @@ class ReviewStatsSchema(BaseModel):
 
 def periodo_label(periodo_id: str | None) -> str:
     if not periodo_id:
-        return "Todos os Double Dates (2024–2026)"
+        return f"Double Date ({ANO_INICIO}–{ANO_FIM})"
     meta = PERIODOS_PROMOCIONAIS.get(periodo_id)
     return meta["label"] if meta else periodo_id
 
@@ -172,7 +165,8 @@ def dataset_info(total: int = 0) -> DatasetInfoSchema:
             PeriodoSchema(
                 id=key,
                 label=meta["label"],
-                ano=meta["ano"],
+                ano_inicio=meta["ano_inicio"],
+                ano_fim=meta["ano_fim"],
                 descricao=meta.get("descricao"),
             )
             for key, meta in PERIODOS_PROMOCIONAIS.items()

@@ -1,15 +1,13 @@
 """Enriquecimento do CSV anotado para o formato PromoSense / Shopee Double Date."""
 
 import hashlib
-from datetime import date
 
 from app.constants.dataset import FONTE_ANOTACAO, PLATAFORMA
 from app.constants.promosense import (
     ASPECTO_KEYWORDS,
     ASPECTOS,
     NEGATIVE_HINTS,
-    PERIODOS_ORDEM,
-    PERIODOS_PROMOCIONAIS,
+    PERIODO_DOUBLE_DATE,
     POSITIVE_HINTS,
 )
 from app.models.aspecto import AspectoAnalise
@@ -61,40 +59,9 @@ def _build_aspectos(texto: str, sentimento: str, review_id: str) -> list[Aspecto
     return aspectos
 
 
-def _assign_periodo(index: int) -> str:
-    """Distribui avaliações entre edições Double Date 2024, 2025 e 2026."""
-    return PERIODOS_ORDEM[index % len(PERIODOS_ORDEM)]
-
-
-def _days_in_month(ano: int, mes: int) -> int:
-    if mes == 2:
-        leap = ano % 4 == 0 and (ano % 100 != 0 or ano % 400 == 0)
-        return 29 if leap else 28
-    if mes in (1, 3, 5, 7, 8, 10, 12):
-        return 31
-    return 30
-
-
-def _assign_data(periodo: str, index: int) -> str:
-    """
-    Data estimada dentro do ano Double Date (2024–2026).
-    Prioriza dias tipo campanha (ex.: 8/8, 9/9) quando o mês permite.
-    """
-    meta = PERIODOS_PROMOCIONAIS[periodo]
-    ano = meta["ano"]
-    meses: tuple[int, ...] = meta["meses"]
-    mes = meses[index % len(meses)]
-    max_dia = _days_in_month(ano, mes)
-    dia_campanha = min(mes, max_dia)
-    dia_alt = 2 + (index % max(1, max_dia - 1))
-    dia = dia_campanha if index % 3 == 0 else min(dia_alt, max_dia)
-    return date(ano, mes, dia).isoformat()
-
-
 def enrich_review(review: Review, index: int) -> Review:
     """Metadados Shopee Double Date + aspectos para o front."""
     review_id = review.id or str(index)
-    periodo = _assign_periodo(index)
 
     if review.aspectos:
         aspectos = review.aspectos
@@ -118,8 +85,7 @@ def enrich_review(review: Review, index: int) -> Review:
     review.plataforma = review.plataforma or PLATAFORMA
     review.fonte_anotacao = review.fonte_anotacao or FONTE_ANOTACAO
     review.autor = review.autor or _assign_autor(review_id)
-    review.periodo_promocional = review.periodo_promocional or periodo
-    review.data_avaliacao = review.data_avaliacao or _assign_data(periodo, index)
+    review.periodo_promocional = review.periodo_promocional or PERIODO_DOUBLE_DATE
     review.aspectos = aspectos
     return review
 

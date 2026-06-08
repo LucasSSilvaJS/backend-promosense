@@ -46,7 +46,6 @@ class ReviewService:
             fonte_anotacao=review.fonte_anotacao,
             periodo_promocional=review.periodo_promocional,  # type: ignore[arg-type]
             periodo_label=periodo_label(review.periodo_promocional),
-            data_avaliacao=review.data_avaliacao or "",
             aspectos=build_aspecto_schemas(aspectos),
         )
 
@@ -75,7 +74,6 @@ class ReviewService:
             plataforma=payload.plataforma,
             fonte_anotacao=payload.fonte_anotacao,
             periodo_promocional=payload.periodo_promocional,
-            data_avaliacao=payload.data_avaliacao,
             aspectos=aspectos,
         )
         created = self._repository.create(review)

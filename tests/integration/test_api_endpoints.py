@@ -38,7 +38,8 @@ class TestDatasetEndpoint:
         assert data["plataforma"] == "shopee"
         assert data["fonte_anotacao"] == "validacao_manual"
         assert data["total_avaliacoes"] == 5
-        assert len(data["periodos"]) == 3
+        assert len(data["periodos"]) == 1
+        assert data["periodos"][0]["id"] == "double_date"
 
 
 @pytest.mark.integration
@@ -47,8 +48,8 @@ class TestAvaliacoesEndpoints:
         response = client.get("/api/v1/avaliacoes/periodos")
         assert response.status_code == 200
         items = response.json()["items"]
-        assert len(items) == 3
-        assert items[0]["id"].startswith("double_date_")
+        assert len(items) == 1
+        assert items[0]["id"] == "double_date"
 
     def test_listar_avaliacoes_paginado(self, client) -> None:
         response = client.get("/api/v1/avaliacoes?page=1&page_size=2")
@@ -78,8 +79,6 @@ class TestAvaliacoesEndpoints:
             "texto": "teste integracao",
             "sentimento": "positivo",
             "autor": "Cliente Shopee #0001",
-            "periodo_promocional": "double_date_2024",
-            "data_avaliacao": "2024-03-03",
             "aspectos": [],
         }
         response = client.post("/api/v1/avaliacoes", json=payload)
@@ -90,8 +89,6 @@ class TestAvaliacoesEndpoints:
             "texto": "teste integracao autenticado",
             "sentimento": "positivo",
             "autor": "Cliente Shopee #0001",
-            "periodo_promocional": "double_date_2024",
-            "data_avaliacao": "2024-03-03",
             "aspectos": [],
         }
         response = client.post("/api/v1/avaliacoes", json=payload, headers=auth_headers)
@@ -103,8 +100,6 @@ class TestAvaliacoesEndpoints:
             "texto": "para editar",
             "sentimento": "neutro",
             "autor": "Cliente Shopee #0002",
-            "periodo_promocional": "double_date_2025",
-            "data_avaliacao": "2025-05-05",
             "aspectos": [],
         }
         created = client.post(
@@ -138,11 +133,11 @@ class TestDashboardEndpoints:
         assert len(data["sentimento_por_aspecto"]) == 3
 
     def test_dashboard_filtrado_por_periodo(self, client) -> None:
-        response = client.get("/api/v1/dashboard?periodo_promocional=double_date_2024")
+        response = client.get("/api/v1/dashboard?periodo_promocional=double_date")
         assert response.status_code == 200
         data = response.json()
-        assert data["periodo_promocional"] == "double_date_2024"
-        assert data["total_avaliacoes"] >= 1
+        assert data["periodo_promocional"] == "double_date"
+        assert data["total_avaliacoes"] == 5
 
     def test_resumo(self, client) -> None:
         response = client.get("/api/v1/dashboard/resumo")

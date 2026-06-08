@@ -18,7 +18,6 @@ class Review:
     plataforma: str = PLATAFORMA
     fonte_anotacao: str = FONTE_ANOTACAO
     periodo_promocional: str | None = None
-    data_avaliacao: str | None = None
     aspectos: list[AspectoAnalise] = field(default_factory=list)
     aspecto: str | None = None
     sentimento_aspecto: str | None = None
@@ -39,7 +38,6 @@ class Review:
             plataforma=data.get("plataforma", PLATAFORMA),
             fonte_anotacao=data.get("fonte_anotacao", FONTE_ANOTACAO),
             periodo_promocional=data.get("periodo_promocional"),
-            data_avaliacao=data.get("data_avaliacao"),
             aspectos=aspectos,
             aspecto=data.get("aspecto") or None,
             sentimento_aspecto=data.get("sentimento_aspecto") or None,
@@ -54,7 +52,6 @@ class Review:
             "plataforma": self.plataforma,
             "fonte_anotacao": self.fonte_anotacao,
             "periodo_promocional": self.periodo_promocional,
-            "data_avaliacao": self.data_avaliacao,
             "aspectos": [a.to_dict() for a in self.aspectos],
             **(
                 {"aspecto": self.aspecto, "sentimento_aspecto": self.sentimento_aspecto}

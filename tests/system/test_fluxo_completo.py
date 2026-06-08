@@ -7,8 +7,6 @@ AVALIACAO_PAYLOAD = {
     "texto": "Double Date com entrega no prazo e preco bom",
     "sentimento": "positivo",
     "autor": "Cliente Shopee #0100",
-    "periodo_promocional": "double_date_2025",
-    "data_avaliacao": "2025-08-08",
     "aspectos": [
         {"nome": "preco", "sentimento": "positivo"},
         {"nome": "entrega", "sentimento": "positivo"},
@@ -29,6 +27,7 @@ class TestFluxoCompletoPromoSense:
 
         periodos = client.get("/api/v1/avaliacoes/periodos")
         periodo_id = periodos.json()["items"][0]["id"]
+        assert periodo_id == "double_date"
 
         lista = client.get(
             f"/api/v1/avaliacoes?periodo_promocional={periodo_id}&page_size=10"
@@ -40,6 +39,7 @@ class TestFluxoCompletoPromoSense:
         detalhe = client.get(f"/api/v1/avaliacoes/{primeiro_id}")
         assert detalhe.status_code == 200
         assert len(detalhe.json()["aspectos"]) == 3
+        assert "data_avaliacao" not in detalhe.json()
 
         dashboard = client.get(f"/api/v1/dashboard?periodo_promocional={periodo_id}")
         assert dashboard.status_code == 200
@@ -54,7 +54,7 @@ class TestFluxoCompletoPromoSense:
         review_id = create.json()["id"]
 
         read = client.get(f"/api/v1/avaliacoes/{review_id}")
-        assert read.json()["periodo_label"] == "Double Date 2025"
+        assert read.json()["periodo_label"] == "Double Date (2024–2026)"
         assert read.json()["aspectos"][0]["label"] == "Preço"
 
         update = client.put(

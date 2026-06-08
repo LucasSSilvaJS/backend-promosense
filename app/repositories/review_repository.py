@@ -174,8 +174,6 @@ class JsonReviewRepository:
             review.autor = data["autor"]
         if "periodo_promocional" in data and data["periodo_promocional"] is not None:
             review.periodo_promocional = data["periodo_promocional"]
-        if "data_avaliacao" in data and data["data_avaliacao"] is not None:
-            review.data_avaliacao = data["data_avaliacao"]
         if "aspectos" in data and data["aspectos"] is not None:
             review.aspectos = [
                 AspectoAnalise.from_dict(a) if isinstance(a, dict) else a
@@ -251,7 +249,8 @@ class JsonReviewRepository:
             {
                 "id": key,
                 "label": meta["label"],
-                "ano": meta["ano"],
+                "ano_inicio": meta["ano_inicio"],
+                "ano_fim": meta["ano_fim"],
                 "descricao": meta.get("descricao"),
             }
             for key, meta in PERIODOS_PROMOCIONAIS.items()

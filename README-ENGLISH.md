@@ -4,7 +4,7 @@
 
 **Production:** https://backend-promosense.onrender.com
 
-Source file: `olist_processado.csv` (text + sentiment + aspect). CRUD storage: `data/avaliacoes.json`.
+Source file: `olist_processado.csv` (text + sentiment + aspect). The CSV **has no per-record date** — it only indicates collection between 2024 and 2026. CRUD storage: `data/avaliacoes.json`.
 
 ---
 
@@ -28,8 +28,8 @@ Source file: `olist_processado.csv` (text + sentiment + aspect). CRUD storage: `
 | Platform | `shopee` |
 | Source | `validacao_manual` |
 | Period | Double Date |
-| Years | 2024, 2025, 2026 |
-| API periods | `double_date_2024`, `double_date_2025`, `double_date_2026` |
+| Collection years | 2024–2026 |
+| API period | `double_date` |
 
 `GET /api/v1/dataset` — full metadata.
 
@@ -138,14 +138,14 @@ Manual checklist: [`tests/manual/CHECKLIST.md`](tests/manual/CHECKLIST.md) — 6
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| GET | `/periodos` | Double Date 2024 / 2025 / 2026 |
+| GET | `/periodos` | Double Date (aggregated collection 2024–2026) |
 | GET | `/` | Paginated list (JSON) |
 | GET | `/{id}` | Review detail |
 | POST | `/` | Create review |
 | PUT | `/{id}` | Update review |
 | DELETE | `/{id}` | Delete review |
 
-**Filters:** `periodo_promocional`, `sentimento`, `search`, `page`, `page_size`
+**Filters:** `periodo_promocional` (`double_date`), `sentimento`, `search`, `page`, `page_size`
 
 ### Dashboard — `/api/v1/dashboard`
 
@@ -159,9 +159,8 @@ Sentiment distribution (general and by aspect: price, delivery, quality). Filter
   "autor": "Cliente Shopee #0042",
   "plataforma": "shopee",
   "fonte_anotacao": "validacao_manual",
-  "periodo_promocional": "double_date_2025",
-  "periodo_label": "Double Date 2025",
-  "data_avaliacao": "2025-05-05",
+  "periodo_promocional": "double_date",
+  "periodo_label": "Double Date (2024–2026)",
   "texto": "recebi bem antes do prazo estipulado",
   "sentimento": "positivo",
   "aspectos": [
@@ -188,8 +187,8 @@ NEXT_PUBLIC_API_URL=https://backend-promosense.onrender.com
 
 | Screen | Endpoint |
 |--------|----------|
-| Reviews | `GET .../api/v1/avaliacoes?periodo_promocional=double_date_2025&page_size=10` |
-| Dashboard | `GET .../api/v1/dashboard?periodo_promocional=double_date_2025` |
+| Reviews | `GET .../api/v1/avaliacoes?periodo_promocional=double_date&page_size=10` |
+| Dashboard | `GET .../api/v1/dashboard?periodo_promocional=double_date` |
 | Period filter | `GET .../api/v1/avaliacoes/periodos` |
 | Health | `GET .../api/v1/health` |
 

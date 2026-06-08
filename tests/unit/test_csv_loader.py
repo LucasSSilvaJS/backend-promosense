@@ -32,7 +32,7 @@ class TestLoadReviewsFromCsv:
         assert all(isinstance(r, Review) for r in reviews)
         assert reviews[0].plataforma == "shopee"
         assert reviews[0].fonte_anotacao == "validacao_manual"
-        assert reviews[0].periodo_promocional.startswith("double_date_")
+        assert reviews[0].periodo_promocional == "double_date"
         assert len(reviews[0].aspectos) == 3
 
     def test_arquivo_inexistente_levanta_erro(self, tmp_path) -> None:

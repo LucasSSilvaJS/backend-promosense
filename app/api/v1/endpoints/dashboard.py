@@ -27,7 +27,7 @@ def get_dashboard(
     service: Annotated[ReviewService, Depends(get_review_service)],
     periodo_promocional: str | None = Query(
         None,
-        description="Filtro: double_date_2024 | double_date_2025 | double_date_2026",
+        description="Filtro: double_date (coleta agregada 2024–2026)",
     ),
 ) -> DashboardSchema:
     return service.get_dashboard(periodo_promocional)

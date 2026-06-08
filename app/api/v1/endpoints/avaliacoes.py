@@ -24,7 +24,7 @@ router = APIRouter()
     "/periodos",
     response_model=PeriodoListSchema,
     summary="Listar períodos promocionais",
-    description="Edições Double Date Shopee (2024, 2025, 2026).",
+    description="Período Double Date Shopee (coleta agregada 2024–2026).",
 )
 @limiter.limit(read_limit())
 def list_periodos(
@@ -49,7 +49,7 @@ def list_avaliacoes(
     sentimento: str | None = Query(None),
     periodo_promocional: str | None = Query(
         None,
-        description="double_date_2024 | double_date_2025 | double_date_2026",
+        description="double_date (coleta agregada 2024–2026)",
     ),
     search: str | None = Query(None, description="Busca no texto da avaliação."),
 ) -> AvaliacaoListSchema:

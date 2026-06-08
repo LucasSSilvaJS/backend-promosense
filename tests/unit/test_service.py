@@ -42,8 +42,6 @@ class TestReviewService:
             texto="servico unitario teste",
             sentimento="positivo",
             autor="Cliente Shopee #0001",
-            periodo_promocional="double_date_2024",
-            data_avaliacao="2024-03-03",
             aspectos=[],
         )
         created = service.create(payload)

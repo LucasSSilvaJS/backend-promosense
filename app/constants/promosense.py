@@ -1,21 +1,21 @@
-"""Períodos Double Date (Shopee) e aspectos de análise."""
+"""Período Double Date (Shopee) e aspectos de análise."""
 
 from app.constants.dataset import ANO_FIM, ANO_INICIO
 
-# Edições Double Date por ano de coleta (2024–2026)
+PERIODO_DOUBLE_DATE = "double_date"
+
+# Coleta agregada 2024–2026 — o CSV não distingue data por registro
 PERIODOS_PROMOCIONAIS: dict[str, dict] = {
-    f"double_date_{ano}": {
-        "label": f"Double Date {ano}",
-        "ano": ano,
-        "meses": tuple(range(1, 13)),
+    PERIODO_DOUBLE_DATE: {
+        "label": f"Double Date ({ANO_INICIO}–{ANO_FIM})",
+        "ano_inicio": ANO_INICIO,
+        "ano_fim": ANO_FIM,
         "descricao": (
-            f"Avaliações coletadas na Shopee durante campanhas Double Date em {ano}."
+            f"Avaliações coletadas na Shopee entre {ANO_INICIO} e {ANO_FIM} "
+            "durante campanhas Double Date. O CSV não contém data por registro."
         ),
     }
-    for ano in range(ANO_INICIO, ANO_FIM + 1)
 }
-
-PERIODOS_ORDEM = list(PERIODOS_PROMOCIONAIS.keys())
 
 ASPECTOS = ("preco", "entrega", "qualidade")
 
